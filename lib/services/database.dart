@@ -13,6 +13,9 @@ class DatabaseService {
   // Subcollection for tasks under a specific user
   CollectionReference get taskCollection =>
       userCollection.doc(uid).collection('tasks');
+  Future<void> deleteTask(String taskId) async {
+    await taskCollection.doc(taskId).delete();
+  }
 
   // Update user data
   Future<void> updateUserData(String name, String email, int taskCount) async {
@@ -38,6 +41,21 @@ class DatabaseService {
     await taskCollection.doc(task.id).update({
       'isDone': task.isDone,
     });
+  }
+// In DatabaseService.dart
+
+  Future<void> updateTask(Task task) async {
+    try {
+      await taskCollection.doc(task.id).update({
+        'title': task.title,
+        'description': task.description,
+        'isDone': task.isDone,
+        'updatedAt': DateTime.now(),
+      });
+    } catch (e) {
+      print('Error updating task: $e');
+      rethrow;
+    }
   }
 
 

@@ -59,7 +59,7 @@ class Home extends StatelessWidget {
         backgroundColor: Colors.grey[100],
         appBar: AppBar(
           title: Text('Task Manager'),
-          backgroundColor: Color(0xFFFFF6E3),
+          backgroundColor: Color(0xFFF0A7BC),
           elevation: 0.0,
           actions: <Widget>[
             TextButton.icon(
