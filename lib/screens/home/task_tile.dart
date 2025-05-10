@@ -1,20 +1,40 @@
+import 'package:provider/provider.dart';
 import 'package:taskmanager/models/Task.dart';
 import 'package:flutter/material.dart';
 import 'package:taskmanager/services/database.dart';
 
-class TaskTile extends StatelessWidget {
+import '../../models/user.dart';
+
+class TaskTile extends StatefulWidget {
   final Task task;
-  TaskTile({ required this.task });
 
-  // Function to toggle the task completion status
-  void _toggleTaskStatus(BuildContext context) async {
-    final databaseService = DatabaseService();
+  TaskTile({required this.task});
 
-    // Toggle the 'isDone' status
-    task.isDone = !task.isDone;
+  @override
+  _TaskTileState createState() => _TaskTileState();
+}
 
-    // Update the task status in the Firestore database
-    await databaseService.updateTaskStatus(task);
+class _TaskTileState extends State<TaskTile> {
+  late bool isDone;
+
+  @override
+  void initState() {
+    super.initState();
+    isDone = widget.task.isDone;
+  }
+
+  void _toggleTaskStatus() async {
+    final user = Provider.of<User?>(context, listen: false);
+    if (user == null || user.uid == null) return;
+
+    setState(() {
+      isDone = !isDone;
+    });
+
+    widget.task.isDone = isDone;
+
+    final databaseService = DatabaseService(uid: user.uid!);
+    await databaseService.updateTaskStatus(widget.task);
   }
 
   @override
@@ -25,17 +45,19 @@ class TaskTile extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 0.0),
         child: ListTile(
           leading: GestureDetector(
-            onTap: () => _toggleTaskStatus(context),  // Toggle on tap
-            child: Icon(
-              task.isDone ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: task.isDone ? Colors.green : Colors.grey,
-              size: 30,
+            onTap: _toggleTaskStatus,
+            child: CircleAvatar(
+              radius: 15,
+              backgroundColor: isDone ? Colors.green : Colors.grey,
+              child: isDone
+                  ? Icon(Icons.check, color: Colors.white, size: 18)
+                  : null,
             ),
           ),
-          title: Text(task.title),
-          subtitle: Text(task.description),
+          title: Text(widget.task.title),
+          subtitle: Text(widget.task.description),
           trailing: Text(
-            '${task.createdAt.day}/${task.createdAt.month}/${task.createdAt.year}',
+            '${widget.task.createdAt.day}/${widget.task.createdAt.month}/${widget.task.createdAt.year}',
             style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
         ),
